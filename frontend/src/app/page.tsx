@@ -16,6 +16,10 @@ export default function Home() {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null); // State for selected file ID
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [errorFiles, setErrorFiles] = useState<string | null>(null);
+  const [docxHtml, setDocxHtml] = useState("");
+  const [pdfUrl, setPdfUrl] = useState("http://localhost:3001/api/files/1/view");
+  const [isDoxc, setIsDocx] = useState(false);
+  const [isPdf, setIsPdf] = useState(false);
 
   useEffect(() => {
     setIsLoadingFiles(true);
@@ -39,7 +43,27 @@ export default function Home() {
       });
   }, []);
 
-  const handleFileSelect = (fileId: string) => {
+  const handleFileSelect = (fileId: string, file:any) => { 
+    setIsDocx(false); 
+    setIsPdf(false); 
+ 
+    // DOCX
+    if(file.filename.includes('docx')) {
+        setIsDocx(true); 
+        fetch(`http://localhost:3001/api/files/${file.id}`)
+          .then((res) => res.json())
+          .then((res) => {
+            console.log(res ); 
+            setDocxHtml(res.data);
+          }) 
+    } 
+    // PDF
+    else if(file.filename.includes('pdf')) {    
+        setIsPdf(true);   
+        setPdfUrl(`http://localhost:3001/api/files/${file.id}/view`)
+    } else {
+      //@todo - apply error message
+    } 
     setSelectedFileId(fileId);
   };
 
@@ -49,7 +73,7 @@ export default function Home() {
   ) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault(); // Prevent default space bar scroll
-      handleFileSelect(fileId);
+      handleFileSelect(fileId, null);
     }
   };
 
@@ -70,7 +94,7 @@ export default function Home() {
                   <li key={file.id}>
                     <button
                       type="button"
-                      onClick={() => handleFileSelect(file.id)}
+                      onClick={() => handleFileSelect(file.id, file)}
                       onKeyDown={(e) => handleKeyDown(e, file.id)}
                       aria-pressed={selectedFileId === file.id}
                       className={`w-full text-left p-3 rounded border cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -92,9 +116,24 @@ export default function Home() {
               </ul>
             )}
           </div>
-
           {/* Comment Section */}
           <div className="md:col-span-2">
+          
+            {isDoxc &&  
+                <div
+                  dangerouslySetInnerHTML={{__html:docxHtml}}
+                > 
+                </div>
+            }
+            {isPdf &&
+                  <iframe 
+                    title="pdf preview"
+                    src={pdfUrl} 
+                    width={"100%"}
+                    height={"1040px"} >
+                  </iframe>
+            }
+
             <CommentSection fileId={selectedFileId} />
           </div>
         </div>

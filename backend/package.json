@@ -11,6 +11,8 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mammoth": "^1.10.0",
+    "nodemon": "^3.1.10"
   }
 }
